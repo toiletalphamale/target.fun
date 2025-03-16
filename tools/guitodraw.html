@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>targeteater.xyz</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
@@ -107,7 +108,7 @@
 <body>
     <div class="header">
         <h1>Convert the gui to drawing</h1>
-        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sigh)</p>
+        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sfigh)</p>
     </div>
     
     <div class="container">
@@ -166,8 +167,7 @@
                 const response = await fetch('http://207.127.92.227:3000/api/convert', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         code: formattedInput
