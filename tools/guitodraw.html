@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>targeteater.xyz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <style>
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            color: #333;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        .container {
+            display: flex;
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 20px;
+            gap: 30px;
+            height: calc(100vh - 160px);
+        }
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .editor-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .editor-label::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+        }
+        .CodeMirror {
+            height: 100%;
+            border-radius: 12px;
+            padding: 15px;
+            background: #282a36;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .convert-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+        .convert-button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .convert-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #f8f9fa;
+        }
+        .convert-button:active {
+            transform: translateY(0);
+        }
+        .convert-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Convert the gui to drawing</h1>
+        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sigh)</p>
+    </div>
+    
+    <div class="container">
+        <div class="editor-container">
+            <div class="editor-label">Input GUI Code</div>
+            <textarea id="input-editor"></textarea>
+        </div>
+        
+        <div class="convert-container">
+            <button class="convert-button">Convert →</button>
+        </div>
+        
+        <div class="editor-container">
+            <div class="editor-label">Drawing Code</div>
+            <textarea id="output-editor"></textarea>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/lua/lua.min.js"></script>
+    <script>
+        const inputEditor = CodeMirror.fromTextArea(document.getElementById('input-editor'), {
+            mode: 'lua',
+            theme: 'dracula',
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            tabSize: 2,
+            lineWrapping: true
+        });
+
+        const outputEditor = CodeMirror.fromTextArea(document.getElementById('output-editor'), {
+            mode: 'lua',
+            theme: 'dracula',
+            lineNumbers: true,
+            readOnly: true,
+            tabSize: 2,
+            lineWrapping: true
+        });
+
+        document.querySelector('.convert-button').addEventListener('click', async () => {
+            const button = document.querySelector('.convert-button');
+            button.disabled = true;
+            button.textContent = 'Converting...';
+            
+            try {
+                const input = inputEditor.getValue();
+                const formattedInput = input
+                    .split('\n')
+                    .map(line => {
+                        line = line.replace(/"/g, "'");
+                        line = line.trim();
+                        return line;
+                    })
+                    .join('\\n');
+
+                const response = await fetch('http://207.127.92.227:3000/api/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: formattedInput
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const cleanCode = data.convertedCode
+                        .replace('```lua\n', '')
+                        .replace('\n```', '')
+                        .split('\\n')
+                        .join('\n');
+
+                    outputEditor.setValue(cleanCode);
+                } else {
+                    outputEditor.setValue('Error: Conversion failed');
+                }
+            } catch (error) {
+                outputEditor.setValue('Error: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Convert →';
+            }
+        });
+    </script>
+</body>
+</html>
