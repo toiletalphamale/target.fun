@@ -107,7 +107,7 @@
 <body>
     <div class="header">
         <h1>Convert the gui to drawing</h1>
-        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sighs)</p>
+        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sigh)</p>
     </div>
     
     <div class="container">
@@ -163,14 +163,11 @@
                     })
                     .join('\\n');
 
-                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                const apiUrl = 'http://207.127.92.227:3000/api/convert';
-                
-                const response = await fetch(proxyUrl + apiUrl, {
+                const response = await fetch('http://207.127.92.227:3000/api/convert', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Origin': 'https://targeteater.xyz'
+                        'Access-Control-Allow-Origin': '*'
                     },
                     body: JSON.stringify({
                         code: formattedInput
