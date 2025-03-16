@@ -108,7 +108,7 @@
 <body>
     <div class="header">
         <h1>Convert the gui to drawing</h1>
-        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sfigh)</p>
+        <p>ts pmo... 🥀🥀🥀 (only saying that bc if u hate its bc its berta. sigh)</p>
     </div>
     
     <div class="container">
@@ -148,6 +148,39 @@
             lineWrapping: true
         });
 
+        let ws;
+        function connectWebSocket() {
+            ws = new WebSocket('ws://207.127.92.227:3000/ws');
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.status === 'success') {
+                    const cleanCode = data.convertedCode
+                        .replace('```lua\n', '')
+                        .replace('\n```', '')
+                        .split('\\n')
+                        .join('\n');
+
+                    outputEditor.setValue(cleanCode);
+                } else {
+                    outputEditor.setValue('Error: Conversion failed');
+                }
+                
+                const button = document.querySelector('.convert-button');
+                button.disabled = false;
+                button.textContent = 'Convert →';
+            };
+            
+            ws.onerror = function(error) {
+                outputEditor.setValue('Error: Connection failed');
+                const button = document.querySelector('.convert-button');
+                button.disabled = false;
+                button.textContent = 'Convert →';
+            };
+        }
+
+        connectWebSocket();
+
         document.querySelector('.convert-button').addEventListener('click', async () => {
             const button = document.querySelector('.convert-button');
             button.disabled = true;
@@ -164,32 +197,16 @@
                     })
                     .join('\\n');
 
-                const response = await fetch('http://207.127.92.227:3000/api/convert', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
                         code: formattedInput
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    const cleanCode = data.convertedCode
-                        .replace('```lua\n', '')
-                        .replace('\n```', '')
-                        .split('\\n')
-                        .join('\n');
-
-                    outputEditor.setValue(cleanCode);
+                    }));
                 } else {
-                    outputEditor.setValue('Error: Conversion failed');
+                    connectWebSocket();
+                    outputEditor.setValue('Error: Trying to reconnect...');
                 }
             } catch (error) {
                 outputEditor.setValue('Error: ' + error.message);
-            } finally {
                 button.disabled = false;
                 button.textContent = 'Convert →';
             }
